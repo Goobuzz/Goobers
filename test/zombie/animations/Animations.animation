@@ -1,0 +1,43 @@
+{
+	"layers" : {
+	"DEFAULT":{
+		"defaultState":"idle",
+		"states": {
+			"idle": {
+				"clipSource": {
+					"clipRef":"animations/idle.clip",
+					"loopCount":-1,
+					"type":"Clip"
+				}
+			},
+			"injured_walk": {
+				"clipSource": {
+					"clipRef":"animations/injured_walk.clip",
+					"loopCount":-1,
+					"type":"Clip"
+				}
+			},
+			"uppercut_jab": {
+				"clipSource": {
+					"clipRef":"animations/uppercut_jab.clip",
+					"loopCount":-1,
+					"type":"Clip"
+				}
+			},
+			"walking": {
+				"clipSource": {
+					"clipRef":"animations/walking.clip",
+					"loopCount":-1,
+					"type":"Clip"
+				}
+			}
+		},
+		"transitions": {
+			"*" : {
+				"type": "Fade",
+				"fadeTime": 2.0
+			}
+		}
+	}
+	}
+}
