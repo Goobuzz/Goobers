@@ -1,27 +1,21 @@
 require([
-	'goo/entities/GooRunner',
-	'goo/statemachine/FSMSystem',
 	'goo/addons/howler/systems/HowlerSystem',
+	'goo/entities/EntityUtils',
+	'goo/entities/GooRunner',
 	'goo/loaders/DynamicLoader',
 	'goo/math/Vector3',
-
 	'goo/renderer/Camera',
-	'goo/entities/components/CameraComponent',
-
-	'goo/entities/components/ScriptComponent',
-	'goo/scripts/OrbitCamControlScript',
-
+	'goo/renderer/Material',
 	'goo/renderer/light/DirectionalLight',
-	'goo/entities/components/LightComponent',
+	'goo/renderer/shaders/ShaderLib',
+	'goo/shapes/ShapeCreator',
 	'goo/util/GameUtils',
 	'goo/util/Grid'
-
-], function (GooRunner,FSMSystem,HowlerSystem,DynamicLoader,Vector3,Camera,CameraComponent,ScriptComponent,OrbitCamControlScript,
-	DirectionalLight,LightComponent, GameUtils, Grid
-) {
+	], function( HowlerSystem, EntityUtils, GooRunner, DynamicLoader, Vector3, Camera, Material, DirectionalLight, ShaderLib, ShapeCreator, GameUtils, Grid ) {
 	'use strict';
+
 	/*
-		Available entities:
+		Available entities in bundle:
 		
 		entities/DefaultToolCamera.entity
 		zombie_injured_walk/entities/RootNode.entity
@@ -33,6 +27,15 @@ require([
 
 	function initGoobers(goo) {
 	
+		var gui = new dat.GUI({autoPlace:false}); // https://code.google.com/p/dat-gui/
+		gui.domElement.style.position = 'absolute';
+		gui.domElement.style.top = '0px';
+		gui.domElement.style.right = '160px';
+		gui.domElement.style['z-index'] = '100';
+		document.getElementById('datGUI').appendChild(gui.domElement);
+
+		
+		// add a nice floor
 		var grid = new Grid(goo.world, { floor: true, width: 400, height: 400, surface: true,
 			surfaceColor: [0.9, 0.9, 0.9, 1],
 			grids: [{
@@ -43,17 +46,46 @@ require([
 		});
 		grid.addToWorld();
 
-		goo.world.process();
+		goo.world.process(); // activate all pending entities.
 
 		var cam = goo.world.entityManager.getEntityByName('entities/DefaultToolCamera.entity');
-		cam.transformComponent.transform.translation.y = 100;
+		cam.transformComponent.transform.translation.y = 100;  // TODO: a bit high ? maybe we need to scale the zombie a bit down...
+
+
+		// make a cheap shotgun
+		function createShotgun() {
+			var mesh = ShapeCreator.createCylinder( 30, 2);
+			var mat = Material.createMaterial( ShaderLib.simpleLit, 'BoxMaterial');
+			var barrelLeft = EntityUtils.createTypicalEntity( goo.world, mesh, mat);
+			barrelLeft.addToWorld();
+			barrelLeft.transformComponent.setTranslation( 1.5, 0, 0);
+
+			var barrelRight = EntityUtils.createTypicalEntity( goo.world, mesh, mat);
+			barrelRight.addToWorld();
+			barrelRight.transformComponent.setTranslation( -1.5, 0, 0 );
+
+			var shotgun = EntityUtils.createTypicalEntity( goo.world);
+			shotgun.addToWorld();
+
+			shotgun.transformComponent.attachChild( barrelLeft.transformComponent);
+			shotgun.transformComponent.attachChild( barrelRight.transformComponent);
+
+			shotgun.transformComponent.setTranslation( 10, -13, -55 );
+			shotgun.transformComponent.setScale( 1, 1, 55); // make the barrels long
+
+			shotgun.transformComponent.setRotation( 0.15, 0.1, 0); // rotate the shotty a bit.
+			
+			return shotgun;
+		}
+
+		var shotgun = createShotgun();
+		cam.transformComponent.attachChild( shotgun.transformComponent);
 		
-		var sc = cam.getComponent( 'ScriptComponent' );
-		
+		// this array stores all pressed keys
 		var keys = new Array(127).join('0').split('').map(parseInt); // fill with 0s
 
 		function keyHandler(e) {
-			// for some reason this method is called with multiple keyDown events on a single keyDown....
+			// for some reason this method is called with multiple keyDown events on a single keyDown.... ( old comment, is this still true ? )
 			keys[e.keyCode] = e.type === "keydown" ? 1 : 0;
 			if( e.keyCode == 27) {
 				GameUtils.exitPointerLock();
@@ -69,11 +101,22 @@ require([
 				cam.transformComponent.setUpdated();
 			}
 		}
-
-		function mouseDown(e) {
-			GameUtils.requestPointerLock();
+		
+		function resetSSG() {
+			shotgun.transformComponent.setRotation( 0.15, 0.1, 0);
 		}
 
+		function mouseDown(e) {
+			if(document.pointerLockElement) {
+				document.getElementById('snd_ssg').play();
+				shotgun.transformComponent.setRotation( 0.35, 0.1, 0);
+				setTimeout( resetSSG, 1000);
+			} else
+				GameUtils.requestPointerLock();
+
+		}
+
+		// TODO: move all FPS code to its own Script or even a Component
 		document.documentElement.addEventListener('mousedown', mouseDown, false);
 		document.documentElement.addEventListener('mousemove', mouseMove, false);
 		document.body.addEventListener('keyup', keyHandler, false);
@@ -88,6 +131,7 @@ require([
 		var movement = new Vector3(1,0,0);
 
 		// replace the OrbitCamera with a FPS Camera
+		var sc = cam.getComponent( 'ScriptComponent' );
 		sc.scripts = [{ run : function( cam, tpf ) {
 			
 			//this.time += tpf;
@@ -109,19 +153,17 @@ require([
 				jump = true;
 			}
 			
-			movement.y = 0;
-			movement.normalize();
-			cam.transformComponent.addTranslation(movement);
+			movement.y = 0; // don't allow flying around, stay on ground
+			movement.normalize(); // move the same amount regardless of where we look
+			cam.transformComponent.addTranslation(movement); // move
 			
-			//console.log( ent);
-			//sc.scripts = [];
 		}}];
 	
 	}
 
 	function init() {
 
-		var goo = new GooRunner({manuallyStartGameLoop: true});
+		var goo = new GooRunner({manuallyStartGameLoop: true, logo: true});
 		goo.world.setSystem(new HowlerSystem());
 
 		// The Loader takes care of loading data from a URL...
