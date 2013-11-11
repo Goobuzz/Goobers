@@ -1,4 +1,5 @@
 require([
+	'goo/addons/howler/components/HowlerComponent',
 	'goo/addons/howler/systems/HowlerSystem',
 	'goo/entities/EntityUtils',
 	'goo/entities/GooRunner',
@@ -11,7 +12,7 @@ require([
 	'goo/shapes/ShapeCreator',
 	'goo/util/GameUtils',
 	'goo/util/Grid'
-	], function( HowlerSystem, EntityUtils, GooRunner, DynamicLoader, Vector3, Camera, Material, DirectionalLight, ShaderLib, ShapeCreator, GameUtils, Grid ) {
+	], function( HowlerComponent, HowlerSystem, EntityUtils, GooRunner, DynamicLoader, Vector3, Camera, Material, DirectionalLight, ShaderLib, ShapeCreator, GameUtils, Grid ) {
 	'use strict';
 
 	/*
@@ -27,14 +28,6 @@ require([
 
 	function initGoobers(goo) {
 	
-		var gui = new dat.GUI({autoPlace:false}); // https://code.google.com/p/dat-gui/
-		gui.domElement.style.position = 'absolute';
-		gui.domElement.style.top = '0px';
-		gui.domElement.style.right = '160px';
-		gui.domElement.style['z-index'] = '100';
-		document.getElementById('datGUI').appendChild(gui.domElement);
-
-		
 		// add a nice floor
 		var grid = new Grid(goo.world, { floor: true, width: 400, height: 400, surface: true,
 			surfaceColor: [0.9, 0.9, 0.9, 1],
@@ -51,6 +44,8 @@ require([
 		var cam = goo.world.entityManager.getEntityByName('entities/DefaultToolCamera.entity');
 		cam.transformComponent.transform.translation.y = 100;  // TODO: a bit high ? maybe we need to scale the zombie a bit down...
 
+
+		var sound = new Howl({urls: ['ssg.ogg']});
 
 		// make a cheap shotgun
 		function createShotgun() {
@@ -74,6 +69,11 @@ require([
 			shotgun.transformComponent.setScale( 1, 1, 55); // make the barrels long
 
 			shotgun.transformComponent.setRotation( 0.15, 0.1, 0); // rotate the shotty a bit.
+			
+			//var howlerComponent = new HowlerComponent(); // results in an exception...
+			//howlerComponent.addSound('shotx', sound);
+			//shotgun.setComponent(howlerComponent);
+
 			
 			return shotgun;
 		}
@@ -108,9 +108,11 @@ require([
 
 		function mouseDown(e) {
 			if(document.pointerLockElement) {
-				document.getElementById('snd_ssg').play();
+				// document.getElementById('snd_ssg').play();
+				//shotgun.howlerComponent.playSound('shot');
+				sound.play();
 				shotgun.transformComponent.setRotation( 0.35, 0.1, 0);
-				setTimeout( resetSSG, 1000);
+				setTimeout( resetSSG, 500);
 			} else
 				GameUtils.requestPointerLock();
 
@@ -165,7 +167,7 @@ require([
 
 		var goo = new GooRunner({manuallyStartGameLoop: true, logo: true});
 		goo.world.setSystem(new HowlerSystem());
-
+		
 		// The Loader takes care of loading data from a URL...
 		var loader = new DynamicLoader({world: goo.world, rootPath: 'res'});
 
