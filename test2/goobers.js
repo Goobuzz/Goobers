@@ -11,8 +11,10 @@ require([
 	'goo/renderer/shaders/ShaderLib',
 	'goo/shapes/ShapeCreator',
 	'goo/util/GameUtils',
-	'goo/util/Grid'
-	], function( HowlerComponent, HowlerSystem, EntityUtils, GooRunner, DynamicLoader, Vector3, Camera, Material, DirectionalLight, ShaderLib, ShapeCreator, GameUtils, Grid ) {
+	'goo/util/Grid',
+	'FPSCamControlScript'
+	], function( HowlerComponent, HowlerSystem, EntityUtils, GooRunner, DynamicLoader, Vector3, Camera,
+					Material, DirectionalLight, ShaderLib, ShapeCreator, GameUtils, Grid, FPSCamControlScript ) {
 	'use strict';
 
 	/*
@@ -81,26 +83,7 @@ require([
 		var shotgun = createShotgun();
 		cam.transformComponent.attachChild( shotgun.transformComponent);
 		
-		// this array stores all pressed keys
-		var keys = new Array(127).join('0').split('').map(parseInt); // fill with 0s
 
-		function keyHandler(e) {
-			// for some reason this method is called with multiple keyDown events on a single keyDown.... ( old comment, is this still true ? )
-			keys[e.keyCode] = e.type === "keydown" ? 1 : 0;
-			if( e.keyCode == 27) {
-				GameUtils.exitPointerLock();
-			}
-		}
-
-		var tmpVec = new Vector3();
-		function mouseMove(e) {
-			if(!document.pointerLockElement) return;
-			if( e.movementX || e.movementY ) {
-				cam.transformComponent.transform.rotation.toAngles(tmpVec);
-				cam.transformComponent.transform.rotation.fromAngles(tmpVec.x-e.movementY/100,tmpVec.y-e.movementX/100,tmpVec.z);
-				cam.transformComponent.setUpdated();
-			}
-		}
 		
 		function resetSSG() {
 			shotgun.transformComponent.setRotation( 0.15, 0.1, 0);
@@ -113,53 +96,12 @@ require([
 				sound.play();
 				shotgun.transformComponent.setRotation( 0.35, 0.1, 0);
 				setTimeout( resetSSG, 500);
-			} else
-				GameUtils.requestPointerLock();
-
-		}
-
-		// TODO: move all FPS code to its own Script or even a Component
-		document.documentElement.addEventListener('mousedown', mouseDown, false);
-		document.documentElement.addEventListener('mousemove', mouseMove, false);
-		document.body.addEventListener('keyup', keyHandler, false);
-		document.body.addEventListener('keydown', keyHandler, false);
-		
-		var fwdBase = new Vector3(0,0,-1);
-		var leftBase = new Vector3(-1,0,0);
-
-		var direction = new Vector3(0,0,1);
-		var left = new Vector3(1,0,0);
-
-		var movement = new Vector3(1,0,0);
-
-		// replace the OrbitCamera with a FPS Camera
-		var sc = cam.getComponent( 'ScriptComponent' );
-		sc.scripts = [{ run : function( cam, tpf ) {
-			
-			//this.time += tpf;
-			
-			cam.transformComponent.transform.applyForwardVector( fwdBase, direction); // get the direction the camera is looking
-			cam.transformComponent.transform.applyForwardVector( leftBase, left); // get the direction to the left of the camera
-			
-			movement.copy(Vector3.ZERO);
-			
-			if (keys[87]) // W
-				movement.add(direction);
-			if (keys[83]) // S
-				movement.sub(direction);
-			if (keys[65]) // A
-				movement.add(left);
-			if (keys[68]) // D
-				movement.sub(left);
-			if (keys[32]) { // space bar
-				jump = true;
 			}
-			
-			movement.y = 0; // don't allow flying around, stay on ground
-			movement.normalize(); // move the same amount regardless of where we look
-			cam.transformComponent.addTranslation(movement); // move
-			
-		}}];
+		}
+		document.documentElement.addEventListener('mousedown', mouseDown, false);
+
+		// replace the OrbitCamera with the FPSCamera
+		cam.getComponent('ScriptComponent').scripts = [new FPSCamControlScript(cam)];
 	
 	}
 
