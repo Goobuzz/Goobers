@@ -9,12 +9,20 @@ require([
 	'goo/renderer/Material',
 	'goo/renderer/light/DirectionalLight',
 	'goo/renderer/shaders/ShaderLib',
+	'goo/renderer/TextureCreator',
 	'goo/shapes/ShapeCreator',
 	'goo/util/GameUtils',
 	'goo/util/Grid',
+	
+	'goo/entities/systems/ParticlesSystem',
+	'goo/entities/components/ParticleComponent',
+	'goo/particles/ParticleUtils',
+	
 	'FPSCamControlScript'
 	], function( HowlerComponent, HowlerSystem, EntityUtils, GooRunner, DynamicLoader, Vector3, Camera,
-					Material, DirectionalLight, ShaderLib, ShapeCreator, GameUtils, Grid, FPSCamControlScript ) {
+		Material, DirectionalLight, ShaderLib, TextureCreator, ShapeCreator, GameUtils, Grid,
+		ParticlesSystem, ParticleComponent, ParticleUtils,
+		FPSCamControlScript ) {
 	'use strict';
 
 	/*
@@ -27,6 +35,45 @@ require([
 		entities/default_light_2.entity 
 	*/
 
+	function addBlood(goo) {
+		var texture = new TextureCreator().loadTexture2D('flare.png');
+		texture.generateMipmaps = true;
+		//texture.wrapS = 'EdgeClamp';
+		//texture.wrapT = 'EdgeClamp';
+
+		var material = Material.createMaterial(ShaderLib.particles);
+		material.setTexture('DIFFUSE_MAP', texture);
+		material.blendState.blending = 'AlphaBlending'; // 'AdditiveBlending';
+		material.cullState.enabled = false;
+		material.depthState.write = false;
+		material.renderQueue = 2001;
+
+		var particleComponent = new ParticleComponent({
+			//particleCount : 200,
+			timeline : [
+				{timeOffset: 0.00, color: [1, 0, 0, 0.5], size: 2.0, spin: 0, mass: 1},
+				{timeOffset: 0.25, color: [1, 0, 0, 0.5]},
+				{timeOffset: 0.25, color: [1, 0, 0, 0.5]},
+				{timeOffset: 0.50, color: [1, 0, 0, 0], size: 3.0,}
+			],
+			emitters : [{
+				totalParticlesToSpawn : -1,
+				releaseRatePerSecond : 5,
+				minLifetime : 1.0,
+				maxLifetime : 2.5,
+				getEmissionVelocity : function (particle/*, particleEntity*/) {
+					var vec3 = particle.velocity;
+					return ParticleUtils.getRandomVelocityOffY(vec3, 0, Math.PI * 15 / 180, 5);
+				}
+			}]
+		});
+		
+		particleComponent.emitters[0].influences.push(ParticleUtils.createConstantForce(new Vector3(0, -20, 0)));
+
+		var entity = EntityUtils.createTypicalEntity( goo.world, material, particleComponent.meshData, [-10, 90, 25]);
+		entity.setComponent(particleComponent);
+		entity.addToWorld();
+	}
 
 	function initGoobers(goo) {
 	
@@ -40,6 +87,8 @@ require([
 			}]
 		});
 		grid.addToWorld();
+		
+		addBlood( goo);
 
 		goo.world.process(); // activate all pending entities.
 
@@ -123,6 +172,8 @@ require([
 		.then(null, function(e) {
 			// The second parameter of 'then' is an error handling function.
 			// We just pop up an error message in case the scene fails to load.
+			console.log(e);
+			console.log('Failed to load scene: ' + e);
 			alert('Failed to load scene: ' + e);
 		});
 	}
