@@ -1,6 +1,7 @@
 require([
 	'goo/addons/howler/components/HowlerComponent',
 	'goo/addons/howler/systems/HowlerSystem',
+	'goo/entities/components/LightComponent',
 	'goo/entities/EntityUtils',
 	'goo/entities/GooRunner',
 	'goo/loaders/DynamicLoader',
@@ -8,6 +9,7 @@ require([
 	'goo/renderer/Camera',
 	'goo/renderer/Material',
 	'goo/renderer/light/DirectionalLight',
+	'goo/renderer/light/SpotLight',
 	'goo/renderer/shaders/ShaderLib',
 	'goo/renderer/TextureCreator',
 	'goo/shapes/ShapeCreator',
@@ -19,8 +21,8 @@ require([
 	'goo/particles/ParticleUtils',
 	
 	'FPSCamControlScript'
-	], function( HowlerComponent, HowlerSystem, EntityUtils, GooRunner, DynamicLoader, Vector3, Camera,
-		Material, DirectionalLight, ShaderLib, TextureCreator, ShapeCreator, GameUtils, Grid,
+	], function( HowlerComponent, HowlerSystem, LightComponent, EntityUtils, GooRunner, DynamicLoader, Vector3, Camera,
+		Material, DirectionalLight, SpotLight, ShaderLib, TextureCreator, ShapeCreator, GameUtils, Grid,
 		ParticlesSystem, ParticleComponent, ParticleUtils,
 		FPSCamControlScript ) {
 	'use strict';
@@ -132,6 +134,17 @@ require([
 		var shotgun = createShotgun();
 		cam.transformComponent.attachChild( shotgun.transformComponent);
 		
+		var spotLight = new SpotLight();
+		spotLight.angle = 25;
+		//spotLight.range = 10;
+		spotLight.penumbra = 5;
+		spotLight.intensity = 1;
+
+		var spotLightEntity = goo.world.createEntity('spotLight');
+		spotLightEntity.setComponent(new LightComponent(spotLight));
+		spotLightEntity.addToWorld();
+
+		cam.transformComponent.attachChild( spotLightEntity.transformComponent);
 
 		
 		function resetSSG() {

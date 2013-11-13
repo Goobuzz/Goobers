@@ -16,56 +16,6 @@
         "name": "DefaultToolCamera.entity",
         "ref": "entities/DefaultToolCamera.entity"
     },
-    "entities/default_light.entity": {
-        "components": {
-            "light": {
-                "color": [
-                    0.8,
-                    0.8,
-                    0.8
-                ],
-                "type": "DirectionalLight"
-            },
-            "transform": {
-                "rotation": [
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    -0.557,
-                    0.557,
-                    0.557
-                ]
-            }
-        }
-    },
-    "entities/default_light_2.entity": {
-        "components": {
-            "light": {
-                "color": [
-                    0.2,
-                    0.2,
-                    0.3
-                ],
-                "type": "DirectionalLight"
-            },
-            "transform": {
-                "rotation": [
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0.557,
-                    -0.557,
-                    -0.557
-                ]
-            }
-        }
-    },
     "project.project": {
         "backgroundColor": [
             0.75,
@@ -79,9 +29,7 @@
         "entityRefs": [
             "entities/DefaultToolCamera.entity",
             "zombie_injured_walk/entities/RootNode.entity",
-            "zombie_injured_walk/entities/Zombie_Geo_0.entity",
-            "entities/default_light.entity",
-            "entities/default_light_2.entity"
+            "zombie_injured_walk/entities/Zombie_Geo_0.entity"
         ],
         "fogColor": [
             1,
@@ -132,9 +80,7 @@
         "libraryRefs": [
             "scripts/DefaultToolCameraScript.script",
             "entities/DefaultToolCamera.entity",
-            "images/screenshot.png",
-            "entities/default_light.entity",
-            "entities/default_light_2.entity"
+            "images/screenshot.png"
         ],
         "name": "root",
         "ref": "root.group"
