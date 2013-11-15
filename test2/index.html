@@ -43,9 +43,19 @@ body {
 	margin-top: -15px;
 	text-align: center;
 }
+#crosshair {
+	position: absolute;
+	z-index: 21;
+	left: 50%;
+	top: 50%;
+	margin-left: -8px;
+	margin-top: -5px;
+	user-select: none;
+}
 </style>
 </head>
 <body>
+<div id="crosshair" ondragstart="return false;" onselectstart="return false;">+</div>
 <div id="loading">Loading...</div>
 </body>
 </html>
