@@ -21,7 +21,11 @@ define(['goo/math/Vector3', 'goo/util/GameUtils'], function(Vector3, GameUtils) 
 			if(!document.pointerLockElement) return;
 			if( e.movementX || e.movementY ) {
 				camRotation.toAngles(tmpVec);
-				camRotation.fromAngles(tmpVec.x-e.movementY/100,tmpVec.y-e.movementX/100,tmpVec.z);
+				tmpVec.x-=e.movementY/100;
+				tmpVec.y-=e.movementX/100;
+				tmpVec.x = Math.min(tmpVec.x, Math.PI/2)
+				tmpVec.x = Math.max(tmpVec.x, -Math.PI/2)
+				camRotation.fromAngles(tmpVec.x,tmpVec.y,tmpVec.z);
 				cam.transformComponent.setUpdated();
 			}
 		}
