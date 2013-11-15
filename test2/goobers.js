@@ -20,16 +20,16 @@ require([
 	'goo/entities/components/ParticleComponent',
 	'goo/particles/ParticleUtils',
 	
-	'FPSCamControlScript'
+	'FPSCamControlScript',
+	'Blood'
 	], function( HowlerComponent, HowlerSystem, LightComponent, EntityUtils, GooRunner, DynamicLoader, Vector3, Camera,
 		Material, DirectionalLight, SpotLight, ShaderLib, TextureCreator, ShapeCreator, GameUtils, Grid,
 		ParticlesSystem, ParticleComponent, ParticleUtils,
-		FPSCamControlScript ) {
+		FPSCamControlScript, Blood ) {
 	'use strict';
 
 	/*
 		Available entities in bundle:
-		
 		entities/DefaultToolCamera.entity
 		zombie_injured_walk/entities/RootNode.entity
 		zombie_injured_walk/entities/Zombie_Geo_0.entity
@@ -37,48 +37,10 @@ require([
 		entities/default_light_2.entity 
 	*/
 
-	function addBlood(goo) {
-		var texture = new TextureCreator().loadTexture2D('flare.png');
-		texture.generateMipmaps = true;
-		//texture.wrapS = 'EdgeClamp';
-		//texture.wrapT = 'EdgeClamp';
-
-		var material = Material.createMaterial(ShaderLib.particles);
-		material.setTexture('DIFFUSE_MAP', texture);
-		material.blendState.blending = 'AlphaBlending'; // 'AdditiveBlending';
-		material.cullState.enabled = false;
-		material.depthState.write = false;
-		material.renderQueue = 2001;
-
-		var particleComponent = new ParticleComponent({
-			//particleCount : 200,
-			timeline : [
-				{timeOffset: 0.00, color: [1, 0, 0, 0.5], size: 2.0, spin: 0, mass: 1},
-				{timeOffset: 0.25, color: [1, 0, 0, 0.5]},
-				{timeOffset: 0.25, color: [1, 0, 0, 0.5]},
-				{timeOffset: 0.50, color: [1, 0, 0, 0], size: 3.0,}
-			],
-			emitters : [{
-				totalParticlesToSpawn : -1,
-				releaseRatePerSecond : 5,
-				minLifetime : 1.0,
-				maxLifetime : 2.5,
-				getEmissionVelocity : function (particle/*, particleEntity*/) {
-					var vec3 = particle.velocity;
-					return ParticleUtils.getRandomVelocityOffY(vec3, 0, Math.PI * 15 / 180, 5);
-				}
-			}]
-		});
-		
-		particleComponent.emitters[0].influences.push(ParticleUtils.createConstantForce(new Vector3(0, -20, 0)));
-
-		var entity = EntityUtils.createTypicalEntity( goo.world, material, particleComponent.meshData, [-10, 90, 25]);
-		entity.setComponent(particleComponent);
-		entity.addToWorld();
-	}
-
 	function initGoobers(goo) {
 	
+		
+
 		// add a nice floor
 		var grid = new Grid(goo.world, { floor: true, width: 400, height: 400, surface: true,
 			surfaceColor: [0.9, 0.9, 0.9, 1],
@@ -90,7 +52,8 @@ require([
 		});
 		grid.addToWorld();
 		
-		addBlood( goo);
+		var blood = new Blood(goo);
+		var spat = blood.spawn([10,10,10]);
 
 		goo.world.process(); // activate all pending entities.
 
@@ -158,6 +121,19 @@ require([
 				sound.play();
 				shotgun.transformComponent.setRotation( 0.35, 0.1, 0);
 				setTimeout( resetSSG, 500);
+				var w = goo.renderer.viewportWidth;
+				var h = goo.renderer.viewportHeight;
+				var x = w / 2;
+				var y = h / 2;
+				goo.pick( x, y, function( id, depth){
+					if( id < 0)
+						return;
+					console.log( depth);
+					var pos = cam.cameraComponent.camera.getWorldCoordinates( x, y, w, h, depth);
+					blood.spawn([pos.x,pos.y,pos.z]);
+					var entity = goo.world.entityManager.getEntityById(id);
+					//entity.transformComponent.setScale( 10, 10, 10); 
+				});
 			}
 		}
 		document.documentElement.addEventListener('mousedown', mouseDown, false);
