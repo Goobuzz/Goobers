@@ -5,6 +5,7 @@ require([
 	'goo/entities/EntityUtils',
 	'goo/entities/GooRunner',
 	'goo/loaders/DynamicLoader',
+	'goo/math/Ray',
 	'goo/math/Vector3',
 	'goo/renderer/Camera',
 	'goo/renderer/Material',
@@ -22,7 +23,7 @@ require([
 	
 	'FPSCamControlScript',
 	'Blood'
-	], function( HowlerComponent, HowlerSystem, LightComponent, EntityUtils, GooRunner, DynamicLoader, Vector3, Camera,
+	], function( HowlerComponent, HowlerSystem, LightComponent, EntityUtils, GooRunner, DynamicLoader, Ray, Vector3, Camera,
 		Material, DirectionalLight, SpotLight, ShaderLib, TextureCreator, ShapeCreator, GameUtils, Grid,
 		ParticlesSystem, ParticleComponent, ParticleUtils,
 		FPSCamControlScript, Blood ) {
@@ -70,10 +71,12 @@ require([
 			var barrelLeft = EntityUtils.createTypicalEntity( goo.world, mesh, mat);
 			barrelLeft.addToWorld();
 			barrelLeft.transformComponent.setTranslation( 1.5, 0, 0);
+			barrelLeft.meshRendererComponent.isPickable = false;
 
 			var barrelRight = EntityUtils.createTypicalEntity( goo.world, mesh, mat);
 			barrelRight.addToWorld();
 			barrelRight.transformComponent.setTranslation( -1.5, 0, 0 );
+			barrelRight.meshRendererComponent.isPickable = false;
 
 			var shotgun = EntityUtils.createTypicalEntity( goo.world);
 			shotgun.addToWorld();
@@ -114,11 +117,39 @@ require([
 			shotgun.transformComponent.setRotation( 0.15, 0.1, 0);
 		}
 
+		var pickingStore = {};
+		var md_pos = new Vector3();
+		var md_dir = new Vector3();
+		var md_ray = new Ray();
+		function pellet( camera, x, y, w, h) {
+			goo.renderer.pick( x, y, pickingStore, camera);
+			console.log( pickingStore.id);
+			if( pickingStore.id == -1)
+				return;
+			
+			camera.getPickRay( x, y, w, h, md_ray);
+			md_ray.direction.mul( pickingStore.depth);
+			md_ray.origin.add( md_ray.direction);
+			blood.spawn(md_ray.origin);
+			
+			/*
+			camera.getWorldCoordinates( x, y, w, h, 0, md_pos);
+			//pos.copy( camera.translation);
+			md_dir.copy( camera._direction);
+			md_dir.mul( pickingStore.depth);
+			md_pos.add( md_dir);
+			blood.spawn(md_pos);
+			*/
+			
+			var entity = goo.world.entityManager.getEntityById(pickingStore.id);
+			// deduct hp
+		}
+
 		function mouseDown(e) {
 			if(document.pointerLockElement) {
 				// document.getElementById('snd_ssg').play();
 				//shotgun.howlerComponent.playSound('shot');
-				sound.play();
+				//sound.play();
 				shotgun.transformComponent.setRotation( 0.35, 0.1, 0);
 				setTimeout( resetSSG, 500);
 				var w = goo.renderer.viewportWidth;
@@ -126,13 +157,16 @@ require([
 				var x = w / 2;
 				var y = h / 2;
 				goo.pick( x, y, function( id, depth){
-					if( id < 0)
-						return;
-					console.log( depth);
-					var pos = cam.cameraComponent.camera.getWorldCoordinates( x, y, w, h, depth);
-					blood.spawn([pos.x,pos.y,pos.z]);
-					var entity = goo.world.entityManager.getEntityById(id);
-					//entity.transformComponent.setScale( 10, 10, 10); 
+					//if( id < 0) return;
+					var camera = cam.cameraComponent.camera;
+					//pellet( camera, x, y, w, h);
+					pellet( camera, x, y, w, h);
+
+					pellet( camera, x+30, y+30, w, h);
+					pellet( camera, x-30, y+30, w, h);
+					pellet( camera, x+30, y-30, w, h);
+					pellet( camera, x-30, y-30, w, h);
+					
 				});
 			}
 		}

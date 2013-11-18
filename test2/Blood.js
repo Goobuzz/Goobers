@@ -46,7 +46,7 @@ define(['goo/entities/EntityUtils', 'goo/math/Vector3', 'goo/renderer/TextureCre
 		var particleComponent = new ParticleComponent(this.config);
 		particleComponent.emitters[0].influences.push(ParticleUtils.createConstantForce(new Vector3(0, -20, 0)));
 
-		var entity = EntityUtils.createTypicalEntity( this.goo.world, this.material, particleComponent.meshData, pos);
+		var entity = EntityUtils.createTypicalEntity( this.goo.world, this.material, particleComponent.meshData, [pos.x,pos.y,pos.z]);
 		entity.setComponent(particleComponent);
 		entity.addToWorld();
 		return entity;
