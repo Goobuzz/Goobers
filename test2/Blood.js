@@ -23,16 +23,16 @@ define(['goo/entities/EntityUtils', 'goo/math/Vector3', 'goo/renderer/TextureCre
 		this.config = {
 			//particleCount : 200,
 			timeline : [
-				{timeOffset: 0.00, color: [1, 0, 0, 0.5], size: 2.0, spin: 0, mass: 1},
-				{timeOffset: 0.25, color: [1, 0, 0, 0.5]},
-				{timeOffset: 0.25, color: [1, 0, 0, 0.5]},
-				{timeOffset: 0.50, color: [1, 0, 0, 0], size: 3.0,}
+				{timeOffset: 0.00, color: [1, 0, 0, 0.5], size: 1.0, spin: 0, mass: 0},
+				//{timeOffset: 0.25, color: [1, 0, 0, 0.5], size: 50.0},
+				//{timeOffset: 0.25, color: [1, 0, 0, 0.5], size: 100.0},
+				{timeOffset: 0.25, color: [1, 0, 0, 0], size: 70.0,}
 			],
 			emitters : [{
-				totalParticlesToSpawn : -1,
+				totalParticlesToSpawn : 1,
 				releaseRatePerSecond : 5,
-				minLifetime : 1.0,
-				maxLifetime : 2.5,
+				minLifetime : 1.25,
+				maxLifetime : 1.25,
 				getEmissionVelocity : function (particle/*, particleEntity*/) {
 					var vec3 = particle.velocity;
 					return ParticleUtils.getRandomVelocityOffY(vec3, 0, Math.PI * 15 / 180, 5);
@@ -47,6 +47,7 @@ define(['goo/entities/EntityUtils', 'goo/math/Vector3', 'goo/renderer/TextureCre
 		particleComponent.emitters[0].influences.push(ParticleUtils.createConstantForce(new Vector3(0, -20, 0)));
 
 		var entity = EntityUtils.createTypicalEntity( this.goo.world, this.material, particleComponent.meshData, [pos.x,pos.y,pos.z]);
+		entity.meshRendererComponent.isPickable = false;
 		entity.setComponent(particleComponent);
 		entity.addToWorld();
 		return entity;

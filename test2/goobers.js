@@ -128,7 +128,7 @@ require([
 				return;
 			
 			camera.getPickRay( x, y, w, h, md_ray);
-			md_ray.direction.mul( pickingStore.depth);
+			md_ray.direction.mul( pickingStore.depth-10);
 			md_ray.origin.add( md_ray.direction);
 			blood.spawn(md_ray.origin);
 			
@@ -145,6 +145,13 @@ require([
 			// deduct hp
 		}
 
+		function randInt(max) {
+			return Math.floor(Math.random()*max);
+		}
+		function randBlood() {
+			return randInt(200)-100;
+		}
+
 		function mouseDown(e) {
 			if(document.pointerLockElement) {
 				// document.getElementById('snd_ssg').play();
@@ -159,13 +166,10 @@ require([
 				goo.pick( x, y, function( id, depth){
 					//if( id < 0) return;
 					var camera = cam.cameraComponent.camera;
-					//pellet( camera, x, y, w, h);
-					pellet( camera, x, y, w, h);
-
-					pellet( camera, x+30, y+30, w, h);
-					pellet( camera, x-30, y+30, w, h);
-					pellet( camera, x+30, y-30, w, h);
-					pellet( camera, x-30, y-30, w, h);
+					
+					for( var i=0; i<10; i++) {
+						pellet( camera, x+randBlood(), y+randBlood(), w, h);
+					}
 					
 				});
 			}
