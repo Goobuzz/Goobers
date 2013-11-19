@@ -29,18 +29,7 @@ require([
 		FPSCamControlScript, Blood ) {
 	'use strict';
 
-	/*
-		Available entities in bundle:
-		entities/DefaultToolCamera.entity
-		zombie_injured_walk/entities/RootNode.entity
-		zombie_injured_walk/entities/Zombie_Geo_0.entity
-		entities/default_light.entity
-		entities/default_light_2.entity 
-	*/
-
 	function initGoobers(goo) {
-	
-		
 
 		// add a nice floor
 		var grid = new Grid(goo.world, { floor: true, width: 400, height: 400, surface: true,
@@ -51,18 +40,19 @@ require([
 				color: [0.7, 0.7, 0.7, 1]
 			}]
 		});
+		EntityUtils.traverse(grid.topEntity, function(entity) {
+			if( entity.meshRendererComponent)
+				entity.meshRendererComponent.isPickable = false;
+		});
 		grid.addToWorld();
 		
-		var blood = new Blood(goo);
-		var spat = blood.spawn([10,10,10]);
-
-		goo.world.process(); // activate all pending entities.
-
-		var cam = goo.world.entityManager.getEntityByName('entities/DefaultToolCamera.entity');
+		var camera = new Camera( 45, 1, 0.1, 1000);
+		var cam = EntityUtils.createTypicalEntity( goo.world, camera, new FPSCamControlScript(), [0,0,5]);
+		cam.addToWorld();
+		cam.transformComponent.transform.translation.z = 400;
 		cam.transformComponent.transform.translation.y = 100;  // TODO: a bit high ? maybe we need to scale the zombie a bit down...
 
-
-		var sound = new Howl({urls: ['ssg.ogg']});
+		var sound = new Howl({urls: ['ssg.ogg'], volume:0.4});
 
 		// make a cheap shotgun
 		function createShotgun() {
@@ -112,7 +102,8 @@ require([
 
 		cam.transformComponent.attachChild( spotLightEntity.transformComponent);
 
-		
+		var blood = new Blood(goo);
+
 		function resetSSG() {
 			shotgun.transformComponent.setRotation( 0.15, 0.1, 0);
 		}
@@ -123,26 +114,25 @@ require([
 		var md_ray = new Ray();
 		function pellet( camera, x, y, w, h) {
 			goo.renderer.pick( x, y, pickingStore, camera);
-			console.log( pickingStore.id);
 			if( pickingStore.id == -1)
 				return;
-			
 			camera.getPickRay( x, y, w, h, md_ray);
 			md_ray.direction.mul( pickingStore.depth-10);
 			md_ray.origin.add( md_ray.direction);
 			blood.spawn(md_ray.origin);
 			
-			/*
-			camera.getWorldCoordinates( x, y, w, h, 0, md_pos);
-			//pos.copy( camera.translation);
-			md_dir.copy( camera._direction);
-			md_dir.mul( pickingStore.depth);
-			md_pos.add( md_dir);
-			blood.spawn(md_pos);
-			*/
-			
 			var entity = goo.world.entityManager.getEntityById(pickingStore.id);
-			// deduct hp
+			var p = entity.transformComponent.parent.entity;
+			var eac = p.animationComponent;
+			
+			if( entity.dmg) entity.dmg += 7; else entity.dmg = 7;
+			if( entity.dmg && entity.dmg == 7) {
+				eac.transitionTo( eac.getStates()[1]); // idle, injured_walk, uppercut_jab, dying
+			}
+			if( entity.dmg && entity.dmg > 100) {
+				eac.layers[0]._steadyStates['mixamo_com__']._sourceTree._clipInstance._loopCount=1;
+				eac.transitionTo( eac.getStates()[3]); // idle, injured_walk, uppercut_jab, dying
+			}
 		}
 
 		function randInt(max) {
@@ -156,7 +146,7 @@ require([
 			if(document.pointerLockElement) {
 				// document.getElementById('snd_ssg').play();
 				//shotgun.howlerComponent.playSound('shot');
-				//sound.play();
+				sound.play();
 				shotgun.transformComponent.setRotation( 0.35, 0.1, 0);
 				setTimeout( resetSSG, 500);
 				var w = goo.renderer.viewportWidth;
@@ -175,14 +165,13 @@ require([
 			}
 		}
 		document.documentElement.addEventListener('mousedown', mouseDown, false);
+	}
 
-		// replace the OrbitCamera with the FPSCamera
-		cam.getComponent('ScriptComponent').scripts = [new FPSCamControlScript(cam)];
-	
+	function endsWith(str, suffix) {
+		return str.indexOf(suffix, str.length - suffix.length) !== -1;
 	}
 
 	function init() {
-
 		var goo = new GooRunner({manuallyStartGameLoop: true, logo: true});
 		goo.world.setSystem(new HowlerSystem());
 		
@@ -199,9 +188,9 @@ require([
 		.then(null, function(e) {
 			// The second parameter of 'then' is an error handling function.
 			// We just pop up an error message in case the scene fails to load.
-			console.log(e);
+			console.log(e.stack);
 			console.log('Failed to load scene: ' + e);
-			alert('Failed to load scene: ' + e);
+			//alert('Failed to load scene: ' + e);
 		});
 	}
 
