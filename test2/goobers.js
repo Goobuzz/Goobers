@@ -180,6 +180,12 @@ require([
 
 		loader.loadFromBundle('project.project', 'root.bundle')
 		.then(function(configs) {
+		
+			var zomb = loader.getCachedObjectForRef("zombie_idle/entities/RootNode.entity");
+			var zomb2 = EntityUtils.clone( goo.world, zomb);
+			zomb2.transformComponent.addTranslation( 85,0,0);
+			zomb2.addToWorld();
+			
 			initGoobers(goo);
 			goo.renderer.domElement.id = 'goo';
 			document.body.appendChild(goo.renderer.domElement);
