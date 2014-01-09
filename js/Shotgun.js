@@ -19,8 +19,10 @@ define([
 ) {
 	'use strict';
 
-	function Shotgun(goo) {
+	function Shotgun(goo, cam, blood) {
 		this.goo = goo;
+		this.cam = cam;
+		this.blood = blood;
 		var world = goo.world;
 		var mesh = ShapeCreator.createCylinder( 30, 2);
 		var mat = Material.createMaterial( ShaderLib.simpleLit);
@@ -51,32 +53,33 @@ define([
 		spotLight.intensity = 1;
 
 		this.spotLightEntity = world.createEntity('spotLight', spotLight).addToWorld();
+		
+		this.sound = new Howl({urls: ['res/sound/ssg.ogg'], volume:0.4});
 	}
 
 	Shotgun.prototype.reset = function() {
-		this.shotgun.transformComponent.setRotation( 0.15, 0.1, 0);
+		this.entity.transformComponent.setRotation( 0.15, 0.1, 0);
 	}
 
-	Shotgun.prototype.shoot = function () {
+	Shotgun.prototype.shoot = function() {
 		if(document.pointerLockElement) {
 			// document.getElementById('snd_ssg').play();
 			//shotgun.howlerComponent.playSound('shot');
-			sound.play();
-			shotgun.transformComponent.setRotation( 0.35, 0.1, 0);
-			setTimeout( this.reset, 500);
-			var w = goo.renderer.viewportWidth;
-			var h = goo.renderer.viewportHeight;
+			this.sound.play();
+			this.entity.transformComponent.setRotation( 0.35, 0.1, 0);
+			setTimeout( this.reset.bind(this), 500);
+			var w = this.goo.renderer.viewportWidth;
+			var h = this.goo.renderer.viewportHeight;
 			var x = w / 2;
 			var y = h / 2;
-			goo.pick( x, y, function( id, depth){
+			this.goo.pick( x, y, function( id, depth){
 				//if( id < 0) return;
-				var camera = cam.cameraComponent.camera;
-				
+				var camera = this.cam.cameraComponent.camera;
 				for( var i=0; i<10; i++) {
-					pellet( camera, x+randBlood(), y+randBlood(), w, h);
+					this.pellet( camera, x+randBlood(), y+randBlood(), w, h);
 				}
 				
-			});
+			}.bind(this));
 		}
 	}
 
@@ -84,16 +87,17 @@ define([
 	var md_pos = new Vector3();
 	var md_dir = new Vector3();
 	var md_ray = new Ray();
-	function pellet( camera, x, y, w, h) {
-		goo.renderer.pick( x, y, pickingStore, camera);
+	Shotgun.prototype.pellet = function( camera, x, y, w, h) {
+		this.goo.renderer.pick( x, y, pickingStore, camera);
 		if( pickingStore.id == -1)
 			return;
 		camera.getPickRay( x, y, w, h, md_ray);
-		md_ray.direction.mul( pickingStore.depth-10);
+		md_ray.direction.mul( pickingStore.depth-0.2);
 		md_ray.origin.add( md_ray.direction);
-		blood.spawn(md_ray.origin);
+		this.blood.spawn(md_ray.origin);
 		
-		var entity = goo.world.entityManager.getEntityById(pickingStore.id);
+		var entity = this.goo.world.entityManager.getEntityById(pickingStore.id);
+		console.log( entity.name);
 		var p = entity.transformComponent.parent.entity;
 		var eac = p.animationComponent;
 		

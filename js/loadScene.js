@@ -15,12 +15,12 @@ require([
 	'goo/loaders/DynamicLoader',
 	'goo/util/rsvp',
 	'js/AmmoFPSCamControlScript',
-	'js/Shotgun'
+	'js/Shotgun',
+	'js/Blood'
 ], function (
-	GooRunner, EntityUtils, ShapeCreator, Material, Camera, ShaderLib, BoundingBox, AmmoSystem, AmmoComponent, OrbitCamControlScript, Vector3,
-	FSMSystem,
-	HowlerSystem,
-	DynamicLoader, RSVP, AmmoFPSCamControlScript, Shotgun
+	GooRunner, EntityUtils, ShapeCreator, Material, Camera, ShaderLib, BoundingBox,
+	AmmoSystem, AmmoComponent, OrbitCamControlScript, Vector3, FSMSystem, HowlerSystem,
+	DynamicLoader, RSVP, AmmoFPSCamControlScript, Shotgun, Blood
 ) {
 	'use strict';
 
@@ -93,6 +93,11 @@ require([
 				var level = loader.getCachedObjectForRef('level_v03/entities/polySurface24_0.entity');
 				level.setComponent( new AmmoComponent());
 				
+				EntityUtils.traverse(level, function(entity) {
+					if( entity.meshRendererComponent)
+						entity.meshRendererComponent.isPickable = false;
+				});
+				
 				var zombieMesh = loader2.getCachedObjectForRef('zombie_idle/entities/RootNode.entity');
 				//zombieMesh.transformComponent.setTranslation(0.02,0.02,0.02);
 				
@@ -100,7 +105,8 @@ require([
 				cam.transformComponent.setTranslation( 0, 1.8, 0);
 				//cam.transformComponent.transform.rotation.lookAt( new Vector3(0,1,-1), new Vector3(0,1,0));
 
-				var shotgun = new Shotgun(goo);
+				var blood = new Blood(goo);
+				var shotgun = new Shotgun(goo, cam, blood);
 				cam.transformComponent.attachChild( shotgun.entity.transformComponent);
 				cam.transformComponent.attachChild( shotgun.spotLightEntity.transformComponent);
 
