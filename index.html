@@ -1,0 +1,46 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="chrome=1">
+<title>Goobers</title>
+
+<!-- disable native mobile pinch-to-zoom, replacing with the Goo Engine zoom -->
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<meta property="og:image" content="res/images/screenshot.png">
+<meta property="og:title" content="ZombieLevel"/>
+<meta property="og:updated_time" content="2013-12-29T21:22:58.630927"/>
+<meta property="og:site_name" content="Goo Create"/>
+<meta property="og:type" content="website"/>
+<link rel="stylesheet" type="text/css" href="style/style.css">
+<script src="lib/howler.min.js"></script>
+<script src="lib/Tween.js"></script>
+<script src="lib/ammo.small.js"></script>
+<script src="lib/goo-require.js"></script>
+<script src="js/loadScene.js"></script>
+<style>
+#crosshair {
+	position: absolute;
+	z-index: 21;
+	left: 50%;
+	top: 50%;
+	margin-left: -8px;
+	margin-top: -5px;
+	user-select: none;
+}
+</style>
+</head>
+<body>
+	<div id="crosshair" ondragstart="return false;" onselectstart="return false;">+</div>
+	<div id="loadingOverlay">
+		<div id="loadingMessage">
+			<h2>Loading project</h2>
+			<div id="progressBar">
+				<div id="progress"></div>
+			</div>
+		</div>
+	</div>
+	
+</body>
+
+</html>
