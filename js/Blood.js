@@ -23,7 +23,7 @@ define(['goo/entities/EntityUtils', 'goo/math/Vector3', 'goo/renderer/TextureCre
 		this.config = {
 			//particleCount : 200,
 			timeline : [
-				{timeOffset: 0.00, color: [1, 0, 0, 0.5], size: 0.02, spin: 0, mass: 0},
+				{timeOffset: 0.00, color: [1, 0, 0, 0.5], size: 0.2, spin: 0, mass: 0},
 				//{timeOffset: 0.25, color: [1, 0, 0, 0.5], size: 50.0},
 				//{timeOffset: 0.25, color: [1, 0, 0, 0.5], size: 100.0},
 				{timeOffset: 0.25, color: [1, 0, 0, 0], size: 1.4,}

@@ -16,11 +16,12 @@ require([
 	'goo/util/rsvp',
 	'js/AmmoFPSCamControlScript',
 	'js/Shotgun',
-	'js/Blood'
+	'js/Blood',
+	'js/Zombie'
 ], function (
 	GooRunner, EntityUtils, ShapeCreator, Material, Camera, ShaderLib, BoundingBox,
 	AmmoSystem, AmmoComponent, OrbitCamControlScript, Vector3, FSMSystem, HowlerSystem,
-	DynamicLoader, RSVP, AmmoFPSCamControlScript, Shotgun, Blood
+	DynamicLoader, RSVP, AmmoFPSCamControlScript, Shotgun, Blood, Zombie
 ) {
 	'use strict';
 
@@ -98,12 +99,13 @@ require([
 						entity.meshRendererComponent.isPickable = false;
 				});
 				
-				var zombieMesh = loader2.getCachedObjectForRef('zombie_idle/entities/RootNode.entity');
-				//zombieMesh.transformComponent.setTranslation(0.02,0.02,0.02);
-				
-				var cam =  EntityUtils.createTypicalEntity(goo.world, new Camera(45, 1, 0.1, 1000)).addToWorld();
+				var cam =  goo.world.createEntity( new Camera(45, 1, 0.1, 1000)).addToWorld();
 				cam.transformComponent.setTranslation( 0, 1.8, 0);
 				//cam.transformComponent.transform.rotation.lookAt( new Vector3(0,1,-1), new Vector3(0,1,0));
+
+				var geo = loader2.getCachedObjectForRef('zombie_idle/entities/Zombie_Geo_0.entity');
+				geo.transformComponent.setRotation(0,-Math.PI,0);
+				var zombie = new Zombie( goo, cam, loader2.getCachedObjectForRef('zombie_idle/entities/RootNode.entity'));
 
 				var blood = new Blood(goo);
 				var shotgun = new Shotgun(goo, cam, blood);
@@ -112,10 +114,7 @@ require([
 
 				document.documentElement.addEventListener('mousedown', shotgun.shoot.bind( shotgun), false);
 
-				
-				var sphereMeshData = ShapeCreator.createSphere(10, 10, 1);
-				var simpleLitMaterial = Material.createMaterial( ShaderLib.simpleLit);
-				var sphere = EntityUtils.createTypicalEntity( goo.world, sphereMeshData, simpleLitMaterial, [0, 1.8, 0], new AmmoFPSCamControlScript());
+				var sphere = goo.world.createEntity( ShapeCreator.createSphere(10, 10, 1), Material.createMaterial( ShaderLib.simpleLit), [12, 1.8, 20], new AmmoFPSCamControlScript());
 				sphere.setComponent(new AmmoComponent({mass:2}));
 				sphere.addToWorld();
 				sphere.meshRendererComponent.hidden = true;
@@ -125,7 +124,7 @@ require([
 				goo.world.process();
 				sphere.ammoComponent.body.setAngularFactor(new Ammo.btVector3(0,0,0));
 				//sphere.ammoComponent.body.setRestitution(0.1);
-				sphere.ammoComponent.body.setFriction(5);
+				sphere.ammoComponent.body.setFriction(2.5);
 				
 				
 				// Start the rendering loop!

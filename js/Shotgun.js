@@ -102,6 +102,7 @@ define([
 		var eac = p.animationComponent;
 		
 		if( entity.dmg) entity.dmg += 7; else entity.dmg = 7;
+		p.dmg = entity.dmg;
 		if( entity.dmg && entity.dmg == 7) {
 			eac.transitionTo( eac.getStates()[1]); // idle, injured_walk, uppercut_jab, dying
 		}
