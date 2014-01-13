@@ -27,7 +27,7 @@ define([
 
 		//zombieEntity.setComponent( new ScriptComponent( this ));
 		
-		var eac = zombieEntity.animationComponent;
+		var eac = this.eac = zombieEntity.animationComponent;
 		eac.transitionTo( eac.getStates()[1]);
 		
 		zombieEntity.transformComponent.setTranslation(0,-1,0);
@@ -41,7 +41,6 @@ define([
 		goo.world.process();
 		sphere.ammoComponent.body.setAngularFactor(new Ammo.btVector3(0,0,0));
 
-
 	}
 	
 	var tmpVec = new Vector3();
@@ -49,29 +48,36 @@ define([
 	
 		var tc = entity.transformComponent;
 
-		if( this.zombieEntity.dmg > 100) {
-			entity.ammoComponent.body.setActivationState( 5);
+		if( this.zombieEntity.dmg > 100) { // dead
+			entity.ammoComponent.body.setActivationState( 5); // DISABLE_SIMULATION
 			//entity.ammoComponent.body.setCollisionFlags( 4); // CF_NO_CONTACT_RESPONSE 
-			tc.transform.rotation.copy( this.lastRotation);
+			tc.transform.rotation.copy( this.lastRotation); // this line is needed so that the physics objects rotation is not used
 			return;
 		}
-	
 
-		tmpVec.copy( this.cam.transformComponent.worldTransform.translation);
+		var pos = tc.transform.translation;
+		var camPos = this.cam.transformComponent.worldTransform.translation;
+		tmpVec.copy( camPos );
 		tmpVec.y = tc.transform.translation.y;
 		tc.lookAt( tmpVec, Vector3.UNIT_Y );
-		
-		this.lastRotation.copy( tc.transform.rotation);
-		
-		
-		tc.transform.applyForwardVector( this.fwdBase, this.direction);
-		
-		this.ammoVector.setValue( this.direction.x*10, 0, this.direction.z*10);
-		
+
+		this.lastRotation.copy( tc.transform.rotation); // save this for use when dead
+
+		var eac = this.eac;
+		if( pos.distanceSquared( camPos) < 10) {
+			eac.transitionTo(eac.getStates()[2]); // fight animation
+			return;
+		} else {
+			eac.transitionTo(eac.getStates()[1]); // walk animation
+		}
+
+		tc.transform.applyForwardVector( this.fwdBase, this.direction); // get direction we are facing
+		this.ammoVector.setValue( this.direction.x*10, 0, this.direction.z*10); // move in the direction we are facing
+
 		entity.ammoComponent.body.applyCentralForce( this.ammoVector);
 		//entity.ammoComponent.body.setLinearVelocity( this.ammoVector);
 		entity.ammoComponent.body.activate();
-		
+
 		var velocity = entity.ammoComponent.body.getLinearVelocity();
 		var len = velocity.length();
 		if( len > 1) { // limit max speed
