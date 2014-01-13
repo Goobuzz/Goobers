@@ -5,13 +5,14 @@ define([
 	'goo/renderer/Material',
 	'goo/renderer/shaders/ShaderLib',
 	'goo/addons/ammo/AmmoComponent',
-	'goo/entities/components/ScriptComponent'
+	'goo/entities/components/ScriptComponent',
+	'goo/entities/EntityUtils'
 ], function(
 	Ray,
 	Vector3,
 	ShapeCreator, Material, ShaderLib,
 	AmmoComponent,
-	ScriptComponent
+	ScriptComponent, EntityUtils
 ) {
 	'use strict';
 
@@ -32,7 +33,7 @@ define([
 		
 		zombieEntity.transformComponent.setTranslation(0,-1,0);
 		
-		var sphere = this.sphere = goo.world.createEntity( ShapeCreator.createSphere(10, 10, 1), Material.createMaterial( ShaderLib.simpleLit), this);
+		var sphere = this.entity = goo.world.createEntity( ShapeCreator.createSphere(10, 10, 1), Material.createMaterial( ShaderLib.simpleLit), this);
 		this.lastRotation = sphere.transformComponent.transform.rotation.clone();
 		sphere.setComponent(new AmmoComponent({mass:2}));
 		sphere.addToWorld();
@@ -85,6 +86,17 @@ define([
 			entity.ammoComponent.body.setLinearVelocity(velocity);
 		}
 		
+	}
+	
+	Zombie.manager = function( goo, cam, zombieEntity) {
+		this.goo = goo;
+		this.cam = cam;
+		this.zombieEntity = zombieEntity;
+		zombieEntity.removeFromWorld();
+	}
+	
+	Zombie.manager.prototype.spawn = function() {
+		return new Zombie( this.goo, this.cam, EntityUtils.clone( this.goo.world, this.zombieEntity).addToWorld());
 	}
 
 	return Zombie;

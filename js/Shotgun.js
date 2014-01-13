@@ -55,6 +55,12 @@ define([
 		this.spotLightEntity = world.createEntity('spotLight', spotLight).addToWorld();
 		
 		this.sound = new Howl({urls: ['res/sound/ssg.ogg'], volume:0.4});
+		
+		cam.transformComponent.attachChild( this.entity.transformComponent);
+		cam.transformComponent.attachChild( this.spotLightEntity.transformComponent);
+	
+		document.documentElement.addEventListener('mousedown', this.shoot.bind( this), false);
+
 	}
 
 	Shotgun.prototype.reset = function() {
