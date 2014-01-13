@@ -107,26 +107,32 @@ require([
 				geo.transformComponent.setRotation(0,-Math.PI,0);
 				var zombieManager = new Zombie.manager( goo, cam, loader2.getCachedObjectForRef('zombie_idle/entities/RootNode.entity'));
 
-				var zombie = zombieManager.spawn();
-
-				var zombie2 = zombieManager.spawn();
-				zombie2.entity.transformComponent.setTranslation( 0, 1.8, 0);
+				zombieManager.spawn();
+				
+				for( var x=-20; x<20; x+=10) {
+					for( var z=-20; z<20; z+=10) {
+						zombieManager.spawn(x, 1.8, z);
+					}
+				}
 				
 
 				var blood = new Blood(goo);
 				var shotgun = new Shotgun(goo, cam, blood);
 
-				var sphere = goo.world.createEntity( ShapeCreator.createSphere(10, 10, 1), Material.createMaterial( ShaderLib.simpleLit), [12, 1.8, 20], new AmmoFPSCamControlScript());
-				sphere.setComponent(new AmmoComponent({mass:2}));
-				sphere.addToWorld();
-				sphere.meshRendererComponent.hidden = true;
+				function setupPlayer() {
+					var sphere = goo.world.createEntity( ShapeCreator.createSphere(10, 10, 1), Material.createMaterial( ShaderLib.simpleLit), [12, 1.8, 20], new AmmoFPSCamControlScript());
+					sphere.setComponent(new AmmoComponent({mass:2}));
+					sphere.addToWorld();
+					sphere.meshRendererComponent.hidden = true;
 
-				sphere.transformComponent.attachChild( cam.transformComponent);
+					sphere.transformComponent.attachChild( cam.transformComponent);
 
-				goo.world.process();
-				sphere.ammoComponent.body.setAngularFactor(new Ammo.btVector3(0,0,0));
-				//sphere.ammoComponent.body.setRestitution(0.1);
-				sphere.ammoComponent.body.setFriction(2.5);
+					goo.world.process();
+					sphere.ammoComponent.body.setAngularFactor(new Ammo.btVector3(0,0,0));
+					//sphere.ammoComponent.body.setRestitution(0.1);
+					sphere.ammoComponent.body.setFriction(2.5);
+				}
+				setupPlayer();
 				
 				
 				// Start the rendering loop!

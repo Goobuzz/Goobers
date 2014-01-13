@@ -16,7 +16,7 @@ define([
 ) {
 	'use strict';
 
-	function Zombie( goo, cam, zombieEntity) {
+	function Zombie( goo, cam, zombieEntity, initPos) {
 		this.goo = goo;
 		this.cam = cam;
 		this.zombieEntity = zombieEntity;
@@ -33,7 +33,7 @@ define([
 		
 		zombieEntity.transformComponent.setTranslation(0,-1,0);
 		
-		var sphere = this.entity = goo.world.createEntity( ShapeCreator.createSphere(10, 10, 1), Material.createMaterial( ShaderLib.simpleLit), this);
+		var sphere = this.entity = goo.world.createEntity( ShapeCreator.createSphere(10, 10, 1), Material.createMaterial( ShaderLib.simpleLit), this, initPos);
 		this.lastRotation = sphere.transformComponent.transform.rotation.clone();
 		sphere.setComponent(new AmmoComponent({mass:2}));
 		sphere.addToWorld();
@@ -95,8 +95,8 @@ define([
 		zombieEntity.removeFromWorld();
 	}
 	
-	Zombie.manager.prototype.spawn = function() {
-		return new Zombie( this.goo, this.cam, EntityUtils.clone( this.goo.world, this.zombieEntity).addToWorld());
+	Zombie.manager.prototype.spawn = function( x, y, z) {
+		return new Zombie( this.goo, this.cam, EntityUtils.clone( this.goo.world, this.zombieEntity).addToWorld(), [x,y,z]);
 	}
 
 	return Zombie;
