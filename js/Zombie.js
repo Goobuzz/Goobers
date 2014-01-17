@@ -42,16 +42,15 @@ define([
 		goo.world.process();
 		sphere.ammoComponent.body.setAngularFactor(new Ammo.btVector3(0,0,0));
 
+		this.timeSinceAttack = 0;
 	}
 	
 	Zombie.prototype.checkAttack = function(time) {
         this.timeSinceAttack += time;
         if (this.timeSinceAttack > 0.292) {
 	        this.timeSinceAttack = 0;
-       		if( this.player.position.distanceSquared(this.position) < 30) {
-       			this.player.healthPoints-=10;
-				document.getElementById('healthPoints').innerHTML = ""+this.player.healthPoints;
-	       	}
+			this.cam.healthPoints-=10;
+			document.getElementById('healthPoints').innerHTML = ""+this.cam.healthPoints;
 	        //document.getElementById('snd_step'+Math.ceil(Math.random()*3)).play(); // TODO: play attack sound, sync with animation
         }
     };
@@ -80,6 +79,7 @@ define([
 		var eac = this.eac;
 		if( pos.distanceSquared( camPos) < 10) {
 			eac.transitionTo(eac.getStates()[2]); // fight animation
+			this.checkAttack(tpf);
 			return;
 		} else {
 			eac.transitionTo(eac.getStates()[1]); // walk animation

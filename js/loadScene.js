@@ -100,6 +100,7 @@ require([
 				});
 				
 				var cam =  goo.world.createEntity( new Camera(45, 1, 0.1, 1000)).addToWorld();
+				cam.healthPoints = 100;
 				cam.transformComponent.setTranslation( 0, 1.8, 0);
 				//cam.transformComponent.transform.rotation.lookAt( new Vector3(0,1,-1), new Vector3(0,1,0));
 
