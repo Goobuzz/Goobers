@@ -24,6 +24,7 @@ define([
 		this.cam = cam;
 		this.blood = blood;
 		var world = goo.world;
+		this.ammo = 25;
 		var mesh = ShapeCreator.createCylinder( 30, 2);
 		var mat = Material.createMaterial( ShaderLib.simpleLit);
 		var barrelLeft = world.createEntity(mesh, mat, [1.5, 0, 0]).addToWorld();
@@ -79,9 +80,13 @@ define([
 
 
 	Shotgun.prototype.shoot = function() {
-		if(!document.pointerLockElement || this.goo.world.time - this.timeSinceAttack < 0.8)
+		if(!document.pointerLockElement || this.goo.world.time - this.timeSinceAttack < 0.8 || this.ammo <= 0)
 			return;
 
+		this.ammo--;
+		//document.getElementById('healthPoints').innerHTML = ""+this.player.healthPoints;
+		document.getElementById('ammo').innerHTML = ""+this.ammo;
+		
 		this.timeSinceAttack = this.goo.world.time;
 		
 		// document.getElementById('snd_ssg').play();

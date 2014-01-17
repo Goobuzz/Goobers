@@ -28,10 +28,28 @@
 	margin-top: -5px;
 	user-select: none;
 }
+#healthPoints {
+	position: absolute;
+	bottom: 20px;
+	left: 20%;
+	z-index: 20;
+	font-size: 50px;
+	margin-left: -38px;
+}
+#ammo {
+	position: absolute;
+	bottom: 20px;
+	left: 80%;
+	z-index: 20;
+	font-size: 50px;
+	margin-left: -38px;
+}
 </style>
 </head>
 <body>
 	<div id="crosshair" ondragstart="return false;" onselectstart="return false;">+</div>
+	<div id="healthPoints">100</div>
+	<div id="ammo">25</div>
 	<div id="loadingOverlay">
 		<div id="loadingMessage">
 			<h2>Loading project</h2>
@@ -42,5 +60,4 @@
 	</div>
 	
 </body>
-
 </html>

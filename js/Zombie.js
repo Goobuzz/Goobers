@@ -44,8 +44,21 @@ define([
 
 	}
 	
+	Zombie.prototype.checkAttack = function(time) {
+        this.timeSinceAttack += time;
+        if (this.timeSinceAttack > 0.292) {
+	        this.timeSinceAttack = 0;
+       		if( this.player.position.distanceSquared(this.position) < 30) {
+       			this.player.healthPoints-=10;
+				document.getElementById('healthPoints').innerHTML = ""+this.player.healthPoints;
+	       	}
+	        //document.getElementById('snd_step'+Math.ceil(Math.random()*3)).play(); // TODO: play attack sound, sync with animation
+        }
+    };
+
+	
 	var tmpVec = new Vector3();
-	Zombie.prototype.run = function( entity) {
+	Zombie.prototype.run = function( entity, tpf) {
 	
 		var tc = entity.transformComponent;
 
