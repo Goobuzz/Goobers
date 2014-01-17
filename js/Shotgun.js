@@ -32,7 +32,7 @@ define([
 		var barrelRight = world.createEntity(mesh, mat, [-1.5, 0, 0]).addToWorld();
 		barrelRight.meshRendererComponent.isPickable = false;
 
-		var shotgun = world.createEntity([0.2, -0.26, -1]).addToWorld();
+		var shotgun = world.createEntity([0.2, -0.26, -1], this).addToWorld();
 
 		shotgun.transformComponent.attachChild( barrelLeft.transformComponent);
 		shotgun.transformComponent.attachChild( barrelRight.transformComponent);
@@ -59,34 +59,48 @@ define([
 		cam.transformComponent.attachChild( this.entity.transformComponent);
 		cam.transformComponent.attachChild( this.spotLightEntity.transformComponent);
 	
-		document.documentElement.addEventListener('mousedown', this.shoot.bind( this), false);
+		var button = this.button = new Array(3).join('0').split('').map(parseFloat); // prefill with 0s
+		var mouseHandler = function (e) { button[e.button] = e.type === "mousedown" ? 1 : 0; }
+		document.documentElement.addEventListener('mousedown', mouseHandler, false);
+		document.documentElement.addEventListener('mouseup', mouseHandler, false);
+
 
 	}
-
+	
+	Shotgun.prototype.run = function( entity, tpf) {
+		if( this.button[0] ) {
+			this.shoot();
+		}
+	}
+	
 	Shotgun.prototype.reset = function() {
 		this.entity.transformComponent.setRotation( 0.15, 0.1, 0);
 	}
 
+
 	Shotgun.prototype.shoot = function() {
-		if(document.pointerLockElement) {
-			// document.getElementById('snd_ssg').play();
-			//shotgun.howlerComponent.playSound('shot');
-			this.sound.play();
-			this.entity.transformComponent.setRotation( 0.35, 0.1, 0);
-			setTimeout( this.reset.bind(this), 500);
-			var w = this.goo.renderer.viewportWidth;
-			var h = this.goo.renderer.viewportHeight;
-			var x = w / 2;
-			var y = h / 2;
-			this.goo.pick( x, y, function( id, depth){
-				//if( id < 0) return;
-				var camera = this.cam.cameraComponent.camera;
-				for( var i=0; i<10; i++) {
-					this.pellet( camera, x+randBlood(), y+randBlood(), w, h);
-				}
-				
-			}.bind(this));
-		}
+		if(!document.pointerLockElement || this.goo.world.time - this.timeSinceAttack < 0.8)
+			return;
+
+		this.timeSinceAttack = this.goo.world.time;
+		
+		// document.getElementById('snd_ssg').play();
+		//shotgun.howlerComponent.playSound('shot');
+		this.sound.play();
+		this.entity.transformComponent.setRotation( 0.35, 0.1, 0);
+		setTimeout( this.reset.bind(this), 500);
+		var w = this.goo.renderer.viewportWidth;
+		var h = this.goo.renderer.viewportHeight;
+		var x = w / 2;
+		var y = h / 2;
+		this.goo.pick( x, y, function( id, depth){
+			//if( id < 0) return;
+			var camera = this.cam.cameraComponent.camera;
+			for( var i=0; i<10; i++) {
+				this.pellet( camera, x+randBlood(), y+randBlood(), w, h);
+			}
+			
+		}.bind(this));
 	}
 
 	var pickingStore = {};
